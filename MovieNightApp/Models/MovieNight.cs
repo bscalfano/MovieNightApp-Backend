@@ -14,5 +14,8 @@
         // Foreign key to user
         public string UserId { get; set; } = string.Empty;
         public ApplicationUser User { get; set; } = null!;
+
+        // Attendees
+        public ICollection<MovieNightAttendee> Attendees { get; set; } = new List<MovieNightAttendee>();
     }
 }

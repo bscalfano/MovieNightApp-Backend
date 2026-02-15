@@ -308,6 +308,34 @@ namespace MovieNightApp.Migrations
                     b.ToTable("MovieNights");
                 });
 
+            modelBuilder.Entity("MovieNightApp.Models.MovieNightAttendee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("MovieNightId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RsvpedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("MovieNightId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("MovieNightAttendees");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -389,6 +417,25 @@ namespace MovieNightApp.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("MovieNightApp.Models.MovieNightAttendee", b =>
+                {
+                    b.HasOne("MovieNightApp.Models.MovieNight", "MovieNight")
+                        .WithMany("Attendees")
+                        .HasForeignKey("MovieNightId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MovieNightApp.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MovieNight");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MovieNightApp.Models.ApplicationUser", b =>
                 {
                     b.Navigation("MovieNights");
@@ -396,6 +443,11 @@ namespace MovieNightApp.Migrations
                     b.Navigation("ReceivedFriendRequests");
 
                     b.Navigation("SentFriendRequests");
+                });
+
+            modelBuilder.Entity("MovieNightApp.Models.MovieNight", b =>
+                {
+                    b.Navigation("Attendees");
                 });
 #pragma warning restore 612, 618
         }

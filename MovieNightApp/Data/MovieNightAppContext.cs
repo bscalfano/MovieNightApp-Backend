@@ -13,6 +13,7 @@ namespace MovieNightApp.Data
 
         public DbSet<MovieNight> MovieNights { get; set; }
         public DbSet<FriendRequest> FriendRequests { get; set; }
+        public DbSet<MovieNightAttendee> MovieNightAttendees { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -41,6 +42,24 @@ namespace MovieNightApp.Data
             // Prevent duplicate friend requests
             builder.Entity<FriendRequest>()
                 .HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
+                .IsUnique();
+
+            // Configure MovieNightAttendee relationships
+            builder.Entity<MovieNightAttendee>()
+                .HasOne(a => a.MovieNight)
+                .WithMany(m => m.Attendees)
+                .HasForeignKey(a => a.MovieNightId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<MovieNightAttendee>()
+                .HasOne(a => a.User)
+                .WithMany()
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Prevent duplicate attendees
+            builder.Entity<MovieNightAttendee>()
+                .HasIndex(a => new { a.MovieNightId, a.UserId })
                 .IsUnique();
         }
     }
