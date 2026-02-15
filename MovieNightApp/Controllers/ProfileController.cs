@@ -53,6 +53,7 @@ namespace MovieNightApp.Controllers
                 Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                ProfilePictureUrl = user.ProfilePictureUrl,
                 CreatedAt = user.CreatedAt,
                 TotalMovieNights = totalMovieNights,
                 UpcomingMovieNights = upcomingMovieNights
@@ -85,6 +86,7 @@ namespace MovieNightApp.Controllers
             user.UserName = dto.Email;
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
+            user.ProfilePictureUrl = dto.ProfilePictureUrl;
 
             var result = await _userManager.UpdateAsync(user);
 

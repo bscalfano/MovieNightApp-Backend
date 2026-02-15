@@ -53,6 +53,7 @@ namespace MovieNightApp.Controllers
                 Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                ProfilePictureUrl = user.ProfilePictureUrl,
                 Expiration = DateTime.UtcNow.AddDays(7)
             });
         }
@@ -82,6 +83,7 @@ namespace MovieNightApp.Controllers
                 Email = user.Email!,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                ProfilePictureUrl = user.ProfilePictureUrl,
                 Expiration = DateTime.UtcNow.AddDays(7)
             });
         }
