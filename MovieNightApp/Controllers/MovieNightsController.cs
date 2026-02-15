@@ -39,7 +39,7 @@ namespace MovieNightApp.Controllers
 
         // GET: api/MovieNights/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<MovieNight>> GetMovieNight(int id)
+        public async Task<ActionResult<object>> GetMovieNight(int id)
         {
             var userId = GetUserId();
             var movieNight = await _context.MovieNights
@@ -51,7 +51,27 @@ namespace MovieNightApp.Controllers
                 return NotFound();
             }
 
-            return movieNight;
+            // Get attendees
+            var attendees = await _context.MovieNightAttendees
+                .AsNoTracking()
+                .Where(a => a.MovieNightId == id)
+                .Include(a => a.User)
+                .Select(a => new
+                {
+                    userId = a.UserId,
+                    email = a.User.Email,
+                    firstName = a.User.FirstName,
+                    lastName = a.User.LastName,
+                    profilePictureUrl = a.User.ProfilePictureUrl,
+                    rsvpedAt = a.RsvpedAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                movieNight = movieNight,
+                attendees = attendees
+            });
         }
 
         // GET: api/MovieNights/upcoming
