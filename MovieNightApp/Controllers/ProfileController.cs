@@ -48,6 +48,14 @@ namespace MovieNightApp.Controllers
                 .Where(m => m.UserId == userId && m.ScheduledDate >= DateTime.Today)
                 .CountAsync();
 
+            var followersCount = await _context.UserFollows
+                .Where(uf => uf.FollowingId == userId)
+                .CountAsync();
+
+            var followingCount = await _context.UserFollows
+                .Where(uf => uf.FollowerId == userId)
+                .CountAsync();
+
             return Ok(new UserProfileDto
             {
                 Email = user.Email!,
@@ -56,7 +64,9 @@ namespace MovieNightApp.Controllers
                 ProfilePictureUrl = user.ProfilePictureUrl,
                 CreatedAt = user.CreatedAt,
                 TotalMovieNights = totalMovieNights,
-                UpcomingMovieNights = upcomingMovieNights
+                UpcomingMovieNights = upcomingMovieNights,
+                FollowersCount = followersCount,
+                FollowingCount = followingCount
             });
         }
 
