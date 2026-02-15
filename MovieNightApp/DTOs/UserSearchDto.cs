@@ -7,6 +7,6 @@
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? ProfilePictureUrl { get; set; }
-        public bool IsFollowing { get; set; }
+        public string FriendshipStatus { get; set; } = "none"; // "none", "pending_sent", "pending_received", "friends"
     }
 }

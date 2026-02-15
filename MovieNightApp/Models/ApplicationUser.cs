@@ -12,10 +12,10 @@ namespace MovieNightApp.Models
         // Navigation properties
         public ICollection<MovieNight> MovieNights { get; set; } = new List<MovieNight>();
 
-        // Users that this user is following
-        public ICollection<UserFollow> Following { get; set; } = new List<UserFollow>();
+        // Friend requests sent by this user
+        public ICollection<FriendRequest> SentFriendRequests { get; set; } = new List<FriendRequest>();
 
-        // Users that are following this user
-        public ICollection<UserFollow> Followers { get; set; } = new List<UserFollow>();
+        // Friend requests received by this user
+        public ICollection<FriendRequest> ReceivedFriendRequests { get; set; } = new List<FriendRequest>();
     }
 }

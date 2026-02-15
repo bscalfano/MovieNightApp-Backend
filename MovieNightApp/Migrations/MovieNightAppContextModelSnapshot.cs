@@ -232,6 +232,41 @@ namespace MovieNightApp.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("MovieNightApp.Models.FriendRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId", "ReceiverId")
+                        .IsUnique();
+
+                    b.ToTable("FriendRequests");
+                });
+
             modelBuilder.Entity("MovieNightApp.Models.MovieNight", b =>
                 {
                     b.Property<int>("Id")
@@ -271,35 +306,6 @@ namespace MovieNightApp.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("MovieNights");
-                });
-
-            modelBuilder.Entity("MovieNightApp.Models.UserFollow", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FollowerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("FollowingId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FollowingId");
-
-                    b.HasIndex("FollowerId", "FollowingId")
-                        .IsUnique();
-
-                    b.ToTable("UserFollows");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -353,6 +359,25 @@ namespace MovieNightApp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MovieNightApp.Models.FriendRequest", b =>
+                {
+                    b.HasOne("MovieNightApp.Models.ApplicationUser", "Receiver")
+                        .WithMany("ReceivedFriendRequests")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MovieNightApp.Models.ApplicationUser", "Sender")
+                        .WithMany("SentFriendRequests")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("MovieNightApp.Models.MovieNight", b =>
                 {
                     b.HasOne("MovieNightApp.Models.ApplicationUser", "User")
@@ -364,32 +389,13 @@ namespace MovieNightApp.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MovieNightApp.Models.UserFollow", b =>
-                {
-                    b.HasOne("MovieNightApp.Models.ApplicationUser", "Follower")
-                        .WithMany("Following")
-                        .HasForeignKey("FollowerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MovieNightApp.Models.ApplicationUser", "Following")
-                        .WithMany("Followers")
-                        .HasForeignKey("FollowingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Follower");
-
-                    b.Navigation("Following");
-                });
-
             modelBuilder.Entity("MovieNightApp.Models.ApplicationUser", b =>
                 {
-                    b.Navigation("Followers");
-
-                    b.Navigation("Following");
-
                     b.Navigation("MovieNights");
+
+                    b.Navigation("ReceivedFriendRequests");
+
+                    b.Navigation("SentFriendRequests");
                 });
 #pragma warning restore 612, 618
         }

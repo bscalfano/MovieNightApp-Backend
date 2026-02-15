@@ -9,7 +9,7 @@
         public DateTime CreatedAt { get; set; }
         public int TotalMovieNights { get; set; }
         public int UpcomingMovieNights { get; set; }
-        public int FollowersCount { get; set; }
-        public int FollowingCount { get; set; }
+        public int FriendsCount { get; set; }
+        public int PendingRequestsCount { get; set; }
     }
 }

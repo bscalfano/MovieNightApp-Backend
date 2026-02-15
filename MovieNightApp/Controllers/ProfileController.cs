@@ -48,12 +48,13 @@ namespace MovieNightApp.Controllers
                 .Where(m => m.UserId == userId && m.ScheduledDate >= DateTime.Today)
                 .CountAsync();
 
-            var followersCount = await _context.UserFollows
-                .Where(uf => uf.FollowingId == userId)
+            var friendsCount = await _context.FriendRequests
+                .Where(fr => fr.Status == FriendRequestStatus.Accepted &&
+                    (fr.SenderId == userId || fr.ReceiverId == userId))
                 .CountAsync();
 
-            var followingCount = await _context.UserFollows
-                .Where(uf => uf.FollowerId == userId)
+            var pendingRequestsCount = await _context.FriendRequests
+                .Where(fr => fr.Status == FriendRequestStatus.Pending && fr.ReceiverId == userId)
                 .CountAsync();
 
             return Ok(new UserProfileDto
@@ -65,8 +66,8 @@ namespace MovieNightApp.Controllers
                 CreatedAt = user.CreatedAt,
                 TotalMovieNights = totalMovieNights,
                 UpcomingMovieNights = upcomingMovieNights,
-                FollowersCount = followersCount,
-                FollowingCount = followingCount
+                FriendsCount = friendsCount,
+                PendingRequestsCount = pendingRequestsCount
             });
         }
 

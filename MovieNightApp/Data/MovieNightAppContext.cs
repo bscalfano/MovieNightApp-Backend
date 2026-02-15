@@ -12,7 +12,7 @@ namespace MovieNightApp.Data
         }
 
         public DbSet<MovieNight> MovieNights { get; set; }
-        public DbSet<UserFollow> UserFollows { get; set; }
+        public DbSet<FriendRequest> FriendRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,22 +25,22 @@ namespace MovieNightApp.Data
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure UserFollow relationships
-            builder.Entity<UserFollow>()
-                .HasOne(uf => uf.Follower)
-                .WithMany(u => u.Following)
-                .HasForeignKey(uf => uf.FollowerId)
+            // Configure FriendRequest relationships
+            builder.Entity<FriendRequest>()
+                .HasOne(fr => fr.Sender)
+                .WithMany(u => u.SentFriendRequests)
+                .HasForeignKey(fr => fr.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<UserFollow>()
-                .HasOne(uf => uf.Following)
-                .WithMany(u => u.Followers)
-                .HasForeignKey(uf => uf.FollowingId)
+            builder.Entity<FriendRequest>()
+                .HasOne(fr => fr.Receiver)
+                .WithMany(u => u.ReceivedFriendRequests)
+                .HasForeignKey(fr => fr.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Prevent duplicate follows
-            builder.Entity<UserFollow>()
-                .HasIndex(uf => new { uf.FollowerId, uf.FollowingId })
+            // Prevent duplicate friend requests
+            builder.Entity<FriendRequest>()
+                .HasIndex(fr => new { fr.SenderId, fr.ReceiverId })
                 .IsUnique();
         }
     }
