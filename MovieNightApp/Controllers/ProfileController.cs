@@ -63,6 +63,7 @@ namespace MovieNightApp.Controllers
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 ProfilePictureUrl = user.ProfilePictureUrl,
+                LetterboxdUsername = user.LetterboxdUsername,
                 CreatedAt = user.CreatedAt,
                 TotalMovieNights = totalMovieNights,
                 UpcomingMovieNights = upcomingMovieNights,
@@ -98,6 +99,7 @@ namespace MovieNightApp.Controllers
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.ProfilePictureUrl = dto.ProfilePictureUrl;
+            user.LetterboxdUsername = dto.LetterboxdUsername;
 
             var result = await _userManager.UpdateAsync(user);
 

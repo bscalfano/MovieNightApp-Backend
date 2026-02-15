@@ -11,5 +11,6 @@ namespace MovieNightApp.DTOs
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? ProfilePictureUrl { get; set; }
+        public string? LetterboxdUsername { get; set; }
     }
 }
