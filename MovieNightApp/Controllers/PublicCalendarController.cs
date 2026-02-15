@@ -76,6 +76,12 @@ namespace MovieNightApp.Controllers
                     .Where(m => m.UserId == userId)
                     .CountAsync();
 
+                // Get friends count
+                var friendsCount = await _context.FriendRequests
+                    .Where(fr => fr.Status == (FriendRequestStatus)1 &&
+                        (fr.SenderId == userId || fr.ReceiverId == userId))
+                    .CountAsync();
+
                 var response = new
                 {
                     user = new
@@ -88,6 +94,7 @@ namespace MovieNightApp.Controllers
                     },
                     movieNights = movieNights,
                     totalMovieNights = totalMovieNights,
+                    friendsCount = friendsCount,
                     isOwnCalendar = currentUserId == userId
                 };
 

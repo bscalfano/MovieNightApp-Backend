@@ -165,6 +165,103 @@ namespace MovieNightApp.Controllers
             return Ok(requests);
         }
 
+        // GET: api/Friends/user/{userId}
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<object>> GetUserFriends(string userId)
+        {
+            var currentUserId = GetUserId();
+
+            // Check if they are friends with this user or if it's their own profile
+            if (userId != currentUserId)
+            {
+                var areFriends = await _context.FriendRequests
+                    .AnyAsync(fr => fr.Status == FriendRequestStatus.Accepted &&
+                        ((fr.SenderId == currentUserId && fr.ReceiverId == userId) ||
+                         (fr.SenderId == userId && fr.ReceiverId == currentUserId)));
+
+                if (!areFriends)
+                {
+                    return StatusCode(403, new { message = "You must be friends to view their friends list" });
+                }
+            }
+
+            // Get the user info
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            // Get all of this user's friends
+            var friendRequests = await _context.FriendRequests
+                .Where(fr => fr.Status == FriendRequestStatus.Accepted &&
+                    (fr.SenderId == userId || fr.ReceiverId == userId))
+                .Include(fr => fr.Sender)
+                .Include(fr => fr.Receiver)
+                .ToListAsync();
+
+            var friendIds = friendRequests
+                .Select(fr => fr.SenderId == userId ? fr.ReceiverId : fr.SenderId)
+                .ToList();
+
+            // Get current user's relationships with these friends
+            var currentUserRelationships = await _context.FriendRequests
+                .Where(fr => (fr.SenderId == currentUserId && friendIds.Contains(fr.ReceiverId)) ||
+                             (fr.ReceiverId == currentUserId && friendIds.Contains(fr.SenderId)))
+                .ToListAsync();
+
+            var friends = friendRequests.Select(fr =>
+            {
+                var friend = fr.SenderId == userId ? fr.Receiver : fr.Sender;
+
+                // Determine friendship status with current user
+                var relationship = currentUserRelationships.FirstOrDefault(r =>
+                    (r.SenderId == currentUserId && r.ReceiverId == friend.Id) ||
+                    (r.ReceiverId == currentUserId && r.SenderId == friend.Id));
+
+                string status = "none";
+                if (friend.Id == currentUserId)
+                {
+                    status = "self";
+                }
+                else if (relationship != null)
+                {
+                    if (relationship.Status == FriendRequestStatus.Accepted)
+                    {
+                        status = "friends";
+                    }
+                    else if (relationship.Status == FriendRequestStatus.Pending)
+                    {
+                        status = relationship.SenderId == currentUserId ? "pending_sent" : "pending_received";
+                    }
+                }
+
+                return new UserSearchDto
+                {
+                    Id = friend.Id,
+                    Email = friend.Email!,
+                    FirstName = friend.FirstName,
+                    LastName = friend.LastName,
+                    ProfilePictureUrl = friend.ProfilePictureUrl,
+                    FriendshipStatus = status
+                };
+            });
+
+            return Ok(new
+            {
+                user = new
+                {
+                    id = user.Id,
+                    email = user.Email,
+                    firstName = user.FirstName,
+                    lastName = user.LastName,
+                    profilePictureUrl = user.ProfilePictureUrl
+                },
+                friends = friends,
+                friendsCount = friends.Count()
+            });
+        }
+
         // POST: api/Friends/request/{userId}
         [HttpPost("request/{userId}")]
         public async Task<IActionResult> SendFriendRequest(string userId)
