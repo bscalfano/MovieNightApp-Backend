@@ -8,5 +8,6 @@
         public string? Notes { get; set; }
         public string? ImageUrl { get; set; }
         public string? Genre { get; set; }
+        // UserId will be set from the authenticated user, not from the DTO
     }
 }

@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieNightApp.Data;
 using MovieNightApp.Models;
 using MovieNightApp.DTOs;
+using System.Security.Claims;
 
 namespace MovieNightApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MovieNightsController : ControllerBase
     {
         private readonly MovieNightAppContext _context;
@@ -17,11 +20,18 @@ namespace MovieNightApp.Controllers
             _context = context;
         }
 
+        private string GetUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        }
+
         // GET: api/MovieNights
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MovieNight>>> GetMovieNights()
         {
+            var userId = GetUserId();
             return await _context.MovieNights
+                .Where(m => m.UserId == userId)
                 .OrderBy(m => m.ScheduledDate)
                 .ThenBy(m => m.StartTime)
                 .ToListAsync();
@@ -31,7 +41,10 @@ namespace MovieNightApp.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<MovieNight>> GetMovieNight(int id)
         {
-            var movieNight = await _context.MovieNights.FindAsync(id);
+            var userId = GetUserId();
+            var movieNight = await _context.MovieNights
+                .Where(m => m.UserId == userId && m.Id == id)
+                .FirstOrDefaultAsync();
 
             if (movieNight == null)
             {
@@ -45,9 +58,10 @@ namespace MovieNightApp.Controllers
         [HttpGet("upcoming")]
         public async Task<ActionResult<IEnumerable<MovieNight>>> GetUpcomingMovieNights()
         {
+            var userId = GetUserId();
             var today = DateTime.Today;
             return await _context.MovieNights
-                .Where(m => m.ScheduledDate >= today)
+                .Where(m => m.UserId == userId && m.ScheduledDate >= today)
                 .OrderBy(m => m.ScheduledDate)
                 .ThenBy(m => m.StartTime)
                 .ToListAsync();
@@ -57,9 +71,10 @@ namespace MovieNightApp.Controllers
         [HttpGet("past")]
         public async Task<ActionResult<IEnumerable<MovieNight>>> GetPastMovieNights()
         {
+            var userId = GetUserId();
             var today = DateTime.Today;
             return await _context.MovieNights
-                .Where(m => m.ScheduledDate < today)
+                .Where(m => m.UserId == userId && m.ScheduledDate < today)
                 .OrderByDescending(m => m.ScheduledDate)
                 .ThenByDescending(m => m.StartTime)
                 .ToListAsync();
@@ -69,6 +84,8 @@ namespace MovieNightApp.Controllers
         [HttpPost]
         public async Task<ActionResult<MovieNight>> PostMovieNight([FromBody] CreateMovieNightDto dto)
         {
+            var userId = GetUserId();
+
             var movieNight = new MovieNight
             {
                 MovieTitle = dto.MovieTitle,
@@ -77,6 +94,7 @@ namespace MovieNightApp.Controllers
                 Notes = dto.Notes,
                 ImageUrl = dto.ImageUrl,
                 Genre = dto.Genre,
+                UserId = userId,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -90,7 +108,10 @@ namespace MovieNightApp.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMovieNight(int id, [FromBody] UpdateMovieNightDto dto)
         {
-            var movieNight = await _context.MovieNights.FindAsync(id);
+            var userId = GetUserId();
+            var movieNight = await _context.MovieNights
+                .Where(m => m.UserId == userId && m.Id == id)
+                .FirstOrDefaultAsync();
 
             if (movieNight == null)
             {
@@ -127,7 +148,11 @@ namespace MovieNightApp.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMovieNight(int id)
         {
-            var movieNight = await _context.MovieNights.FindAsync(id);
+            var userId = GetUserId();
+            var movieNight = await _context.MovieNights
+                .Where(m => m.UserId == userId && m.Id == id)
+                .FirstOrDefaultAsync();
+
             if (movieNight == null)
             {
                 return NotFound();
@@ -141,7 +166,8 @@ namespace MovieNightApp.Controllers
 
         private bool MovieNightExists(int id)
         {
-            return _context.MovieNights.Any(e => e.Id == id);
+            var userId = GetUserId();
+            return _context.MovieNights.Any(e => e.Id == id && e.UserId == userId);
         }
     }
 }
